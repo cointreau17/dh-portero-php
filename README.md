@@ -23,6 +23,10 @@ $name = $userClient->getUserName('9bc44228-6342-4f6c-893e-67b3e62c11a3');
 
 Devuelve `null` si el usuario no existe o si el servicio no está disponible.
 
+`getUserPublicProfile($uuid)` devuelve `['uuid', 'name', 'avatar', 'createdAt']`
+(el avatar es el código HilarAvatar; `createdAt`, la fecha de alta en ISO 8601),
+o `null` en los mismos casos. Llama a `GET /user/{uuid}/public` en dhcore.
+
 ## Configuración en Symfony
 
 Registra el servicio en `config/services.yaml`:

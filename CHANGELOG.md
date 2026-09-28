@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0]
+
+### Added
+- `UserClient::getUserPublicProfile(string $uuid): ?array` — Name, HilarAvatar code and sign-up date (`createdAt`, ISO 8601) from dh-core `GET /user/{uuid}/public`. Cached for 1 hour; errors for 60 seconds.
+
+---
+
 ## [1.1.0]
 
 ### Added

@@ -12,6 +12,7 @@ final class UserClient
 {
     private const CACHE_PREFIX      = 'dh_user_name_';
     private const CACHE_PREFIX_UUID = 'dh_user_uuid_';
+    private const CACHE_PREFIX_PUB  = 'dh_user_public_';
     private const CACHE_TTL         = 3600;
     private const CACHE_TTL_ERR     = 60;
 
@@ -76,6 +77,45 @@ final class UserClient
                 return $name;
             } catch (\Throwable) {
                 // En caso de error, cachear poco tiempo para no bloquear
+                $item->expiresAfter(self::CACHE_TTL_ERR);
+
+                return null;
+            }
+        });
+    }
+
+    /**
+     * Nombre, código HilarAvatar y fecha de alta (ISO 8601) de un usuario.
+     *
+     * @return array{uuid: string, name: ?string, avatar: ?string, createdAt: ?string}|null
+     */
+    public function getUserPublicProfile(string $uuid): ?array
+    {
+        $cacheKey = self::CACHE_PREFIX_PUB . str_replace('-', '_', $uuid);
+
+        return $this->cache->get($cacheKey, function (ItemInterface $item) use ($uuid): ?array {
+            try {
+                $response = $this->httpClient->request(
+                    'GET',
+                    rtrim($this->baseUrl, '/') . '/user/' . rawurlencode($uuid) . '/public',
+                    [
+                        'verify_peer' => false,
+                        'verify_host' => false,
+                        'timeout'     => 3,
+                    ]
+                );
+
+                $data = $response->toArray();
+
+                $item->expiresAfter(self::CACHE_TTL);
+
+                return [
+                    'uuid'      => (string) ($data['uuid'] ?? $uuid),
+                    'name'      => $data['name'] ?? null,
+                    'avatar'    => $data['avatar'] ?? null,
+                    'createdAt' => $data['createdAt'] ?? null,
+                ];
+            } catch (\Throwable) {
                 $item->expiresAfter(self::CACHE_TTL_ERR);
 
                 return null;
